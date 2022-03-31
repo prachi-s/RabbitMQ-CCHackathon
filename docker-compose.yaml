@@ -1,0 +1,54 @@
+# Fill in the YAML configuration for the microservices 
+# https://docs.docker.com/compose/networking/
+
+version: "2.1"
+services:
+  rabbitMQ_server:
+    image: rabbitmq
+    container_name: rabbitmq-server
+    ports:
+      - "5672:5672"
+    networks:
+      - main-network
+    hostname: rabbitmq
+
+  producer:
+    build:
+      context: .
+      dockerfile: Dockerfile_producer
+    container_name: rabbitmq-producer
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - rabbitMQ_server
+    networks:
+      - main-network
+    hostname: server
+
+  ride_matching:
+    build:
+      context: .
+      dockerfile: Dockerfile_ride_matching
+    environment:
+      - CONSUMER_ID=2364
+      - PRODUCER_ADDRESS=192.168.1.1:420
+    networks:
+      - main-network
+    restart: always
+
+  ride_database:
+    build:
+      context: .
+      dockerfile: Dockerfile_database
+    container_name: rabbitmq-database
+    networks:
+      - main-network
+    restart: always
+    depends_on:
+      - producer
+    
+  
+networks:
+  main-network:
+    driver: bridge

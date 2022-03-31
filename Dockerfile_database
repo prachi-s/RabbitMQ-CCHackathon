@@ -1,0 +1,10 @@
+FROM node:latest
+
+WORKDIR /app
+
+COPY package*.json ./
+COPY database_consumer.js ./
+
+RUN npm install
+
+ENTRYPOINT ["node", "database_consumer.js"]
